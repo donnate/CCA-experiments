@@ -36,20 +36,16 @@ generate_simple_example <- function(n, p1, p2,
   s = (1):(nnzeros)
   
   # generate covariance matrix for X and Y
-  Tss = Sigma[s,s];
   u = matrix(0, pp[1], r)
   u[s,1:r] <- as.matrix(runif( nnzeros * r,max = 3, min=1), nrow=nnzeros)  * as.matrix(sample(c(-1,1), nnzeros*r, replace=TRUE), nrow=nnzeros)
-  u <- u %*%(sqrtm(t(u[s,1:r]) %*% Tss%*% u[s,1:r])$Binv)
+  u <- u %*%(sqrtm(t(u[s,1:r])%*% u[s,1:r])$Binv)
   
-  Tss = Sigma[(p1+1):(p1+p2), (p1+1):(p1+p2)][s, s];
   v = matrix(0, pp[2], r)
   v[s,1:r] <- as.matrix(runif( nnzeros * r,max = 3, min=1), nrow=nnzeros)  * as.matrix(sample(c(-1,1), nnzeros*r, replace=TRUE), nrow=nnzeros)
-  v <- v %*%(sqrtm(t(v[s,1:r]) %*% Tss %*% v[s,1:r])$Binv)
+  v <- v %*%(sqrtm(t(v[s,1:r]) %*% v[s,1:r])$Binv)
   
   ###
-  sqrt_T2 = sqrtm(Sigma[(p1+1):p_tot,(p1+1):p_tot])$B
-  sqrt_T1 = sqrtm(Sigma[1:p1, 1:p1])$B
-  Sigma[(p1+1):(p1+p2), 1:p1] = sqrt_T2 %*%  v  %*% theta %*% t(u) %*% sqrt_T1;
+  Sigma[(p1+1):(p1+p2), 1:p1] =  v  %*% theta %*% t(u);
   Sigma[1:p1, (p1+1):(p1+p2)] = t(Sigma[(p1+1):(p1+p2), 1:p1])
   
   Sigmax = Sigma[1:p1,1:p1];
@@ -228,9 +224,9 @@ generate_example_none_trivial_pca <- function(n, p1, p2,
   v <- v %*%(sqrtm(t(v[s,1:r]) %*% Tss %*% v[s,1:r])$Binv)
   
   ###
-  sqrt_T2 = sqrtm(T2)$B
-  sqrt_T1 = sqrtm(T1)$B
-  Sigma[(p1+1):(p1+p2), 1:p1] = sqrt_T2 %*%  v  %*% theta %*% t(u) %*% sqrt_T1;
+  T2 = Sigma[(p1+1):p_tot,(p1+1):p_tot]
+  T1 = Sigma[1:p1, 1:p1]
+  Sigma[(p1+1):(p1+p2), 1:p1] = T2 %*%  v  %*% theta %*% t(u) %*% T1;
   Sigma[1:p1, (p1+1):(p1+p2)] = t(Sigma[(p1+1):(p1+p2), 1:p1])
   
   Sigmax = Sigma[1:p1,1:p1];
