@@ -23,10 +23,11 @@ set.seed(seed)
 it = seed
 THRES = 1e-3
 
-sparsity = 0.05
+#sparsity = 0.05
 
 
 for (psize in c(ratio * n)) {
+  for (sparsity in c(0.01, 0.05, 0.1, 0.2)){
       nnz = ceil(sparsity * psize)
       if (max(r_pca, r) * nnz < psize & max(r_pca, r) < nnz) { 
         if (nnz > 2){
@@ -239,6 +240,7 @@ for (psize in c(ratio * n)) {
     }
   }
 }
+
 
 
 
