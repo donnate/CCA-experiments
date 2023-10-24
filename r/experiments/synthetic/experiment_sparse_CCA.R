@@ -1,10 +1,11 @@
 wd = getwd()
-#wd = "~/Documents/group-CCA/"
+wd = "~/Documents/CCA-experiments/"
 print(wd)
 setwd(wd)
-source("experiments/experiment_functions.R")
-source("experiments/generate_examples.R")
-source("src/ssvd/my_ssvd.R")
+source("r/experiments/synthetic/experiment_functions.R")
+source("r/experiments/synthetic/generate_examples.R")
+source("r/experiments/synthetic/metrics.R")
+source("r/ssvd/my_ssvd.R")
 results <- c()
 
 args <- commandArgs(trailingOnly=TRUE)
@@ -20,6 +21,8 @@ ratio <- as.numeric(args[8])
 set.seed(seed)
 it = seed
 THRES = 1e-3
+
+sparsity = 0.05
 
 
 for (psize in c(ratio * n)) {
