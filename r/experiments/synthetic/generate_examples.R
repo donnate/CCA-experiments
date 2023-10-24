@@ -172,11 +172,11 @@ generate_example_none_trivial_pca <- function(n, p1, p2,
   print(paste0('Number of non zeros is: ', nnzeros))
   start <- ceiling((1 - overlapping_amount) * nnzeros)
   s_pca  <- (start + 1) : (start + nnzeros)
-  s_pca2  <- (start + p1 + 1) : (start + p1 + nnzeros)
+  s_pca2  <- s_pca
   Lambda_pca <- rep(lambda_pca, r_pca)
   # generate vcovariance matrix for X and Y
   u1 = matrix(0, p1, r_pca)
-  u1[s_pca, ] <- matrix(runif(n = nnzeros * r_pca, max = 3, min=1), nrow = nnzeros, ncol = r_pca)* as.matrix(sample(c(-1,1), nnzeros*r_pca, replace=TRUE), nrow=nnzeros)
+  u1[s_pca, ] <- matrix(runif(n = nnzeros * r_pca, max = 3, min=1), nrow = nnzeros, ncol = r_pca) * matrix(sample(c(-1,1), nnzeros * r_pca, replace=TRUE), nrow=nnzeros, ncol=r_pca)
   # Normalize u1
   u1[s_pca, 1:r_pca] <- u1[s_pca,1:r_pca] %*% (sqrtm(t(u1[s_pca,1:r_pca]) %*% u1[s_pca, 1:r_pca])$Binv)
   T1 <- u1 %*% diag(Lambda_pca) %*% t(u1)
@@ -189,7 +189,7 @@ generate_example_none_trivial_pca <- function(n, p1, p2,
 
    ### Same for Sigma_y
   u2 <- matrix(0, pp[2], r_pca)
-  u2[s_pca2, 1:r_pca] <- as.matrix(runif( nnzeros * r_pca,max = 3, min=1), nrow=nnzeros)  * as.matrix(sample(c(-1,1), nnzeros*r_pca, replace=TRUE), nrow=nnzeros)
+  u2[s_pca2, 1:r_pca] <- matrix(runif( nnzeros * r_pca,max = 3, min=1), nrow=nnzeros)  * matrix(sample(c(-1,1), nnzeros*r_pca, replace=TRUE), nrow=nnzeros, ncol=r_pca)
   u2[s_pca2, 1:r_pca] <- u2[s_pca2,1:r_pca] %*% (sqrtm(t(u2[s_pca2,1:r_pca]) %*% u2[s_pca2,1:r_pca])$Binv)
   T2 <- u2 %*% diag(Lambda_pca) %*% t(u2)
   if (normalize_diagonal){
@@ -233,7 +233,7 @@ generate_example_none_trivial_pca <- function(n, p1, p2,
   # Generate ground truth canonical vectors
   Sigma_X_inv <- solve(Sigma[1:p1, 1:p1])
   Sigma_Y_inv <-  solve(Sigma[(p1+1):(p_tot), (p1+1):(p_tot)])
-  GT = svd(Sigma_X_inv %*% Sigma[1:p1, (p1+1):p_tot] %*% Sigma_Y_inv, nu = r, nv = r)
+  GT = svd(Sigma_X_inv %*% Sigma[1:p1, (p1 + 1):p_tot] %*% Sigma_Y_inv, nu = r, nv = r)
   return(list(Sigma=Sigma, Sigma0=Sigma0,
               S = S, sigma0hat =  sigma0hat, Mask= Mask,
               X=X, Y = Y, Data=Data, u=GT$u, v=GT$v, 
