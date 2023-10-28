@@ -146,12 +146,14 @@ my.ssvd <-
             method = c("theory", "method"), alpha.method = 0.05,
             alpha.theory = 1.5, huber.beta = 0.95, sigma = NA, r = 1,
             gamma.u = sqrt(2), gamma.v = sqrt(2), dothres = "hard", tol = 1e-08,
-            n.iter = 100, n.boot = 100, non.orth = FALSE, reps = 1)
+            n.iter = 100, n.boot = 100, non.orth = FALSE, reps = 1, init_norm = FALSE)
     # the main function
+    # init_norm: whether to normalize the initial estimator.
   {
-    ans.initial <- ssvd.initial(x, method = method, alpha.method = alpha.method,
+    ans.initial <- ssvd.initial(x, Sigma_u = Sigma_u, Sigma_v = Sigma_v, 
+                                method = method, alpha.method = alpha.method,
                                 alpha.theory = alpha.theory, huber.beta = huber.beta,
-                                sigma = sigma, r = r)
+                                sigma = sigma, r = r, init_norm = init_norm)
     my.ssvd.iter.thresh(x, Sigma_u, Sigma_v,
                         method = method, u.old = ans.initial$u,
                        v.old = ans.initial$v, gamma.u = gamma.u, gamma.v = gamma.v,
@@ -161,9 +163,9 @@ my.ssvd <-
   }
 
 ssvd.initial <-
-  function (x,
+  function (x, Sigma_u = NA, Sigma_v = NA,
             method = c("theory", "method"), alpha.method = 0.05,
-            alpha.theory = 1.5, huber.beta = 0.95, sigma = NA, r = 1)
+            alpha.theory = 1.5, huber.beta = 0.95, sigma = NA, r = 1, init_norm = FALSE)
     # implement SSVD initial selection in both the methodology and theoretical paper
     # to use theoretical one, set method to "theory", and set alpha.theory
     # to use methodology, set method to the "method", and set alpha.method, huber.beta
@@ -214,6 +216,24 @@ ssvd.initial <-
     u.hat[I.row, ] <- x.sub.svd$u
     v.hat[I.col, ] <- x.sub.svd$v
     d.hat <- x.sub.svd$d[1:r]
+    
+    if(init_norm){
+      norm_u = t(u.hat) %*% Sigma_u %*% u.hat
+      index_zero = which(diag(norm_u) < 1e-8)
+      for (ind in index_zero){
+        norm_u[ind, ind] = 1
+      }
+      u.hat <- u.hat %*% (sqrtm(norm_u)$Binv)
+      
+      norm_v = t(v.hat) %*% Sigma_v %*% v.hat
+      index_zero = which(diag(norm_v) < 1e-8)
+      for (ind in index_zero){
+        norm_v[ind, ind] = 1
+      }
+      v.hat <- v.hat %*% (sqrtm(norm_v)$Binv)
+      
+    }
+    
     list(u = u.hat, v = v.hat, d = d.hat, sigma.hat = sigma.hat)
   }
 
