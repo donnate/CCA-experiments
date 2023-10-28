@@ -313,7 +313,7 @@ generate_example_sparse_product <- function(n, p1, p2,
   Tss <- precision[s,s]
   prod <- matrix(0, pp[1], r)
   prod[s, 1:r] <- as.matrix(runif( nnzeros * r,max = 3, min=1), nrow=nnzeros)  * as.matrix(sample(c(-1,1), nnzeros*r, replace=TRUE), nrow=nnzeros)
-  prod <- u %*% (sqrtm(t(u[s, 1:r]) %*% Tss %*% u[s, 1:r])$Binv)
+  prod <- u %*% (sqrtm(t(prod[s, 1:r]) %*% Tss %*% prod[s, 1:r])$Binv)
   u = precision %*% prod
   
   precision_y = solve(Sigma[(p1 + 1):(p1 + p2), (p1 + 1):(p1 + p2)] )
