@@ -3,3 +3,5 @@ r/.Rproj.user/*
 r/.Rproj.user
 .Rproj.user
 CCA-experiments.Rproj
+r/experiments/synthetic/logs/
+r/experiments/synthetic/results/

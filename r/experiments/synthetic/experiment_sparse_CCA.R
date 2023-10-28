@@ -10,7 +10,8 @@ source("r/ssvd/my_ssvd.R")
 results <- c()
 
 args <- commandArgs(trailingOnly=TRUE)
-seed <- as.numeric(args[1])
+seed <- as.integer(as.numeric(args[1]))
+#seed=1
 print(seed)
 name_exp <- args[2]
 n <- as.integer(as.numeric(args[3]))
@@ -22,6 +23,7 @@ ratio <- as.numeric(args[8])
 set.seed(seed)
 it = seed
 THRES = 1e-3
+print(args)
 
 #sparsity = 0.05
 
@@ -29,7 +31,8 @@ THRES = 1e-3
 for (psize in c(ratio * n)) {
   for (sparsity in c(0.01, 0.05, 0.1, 0.2)){
       nnz = ceil(sparsity * psize)
-      if (max(r_pca, r) * nnz < psize && max(r_pca, r) < nnz) { 
+      print(c(max(r_pca, r) * nnz, psize, max(r_pca, r), nnz))
+      if ((max(r_pca, r) * nnz < psize) && (max(r_pca, r) < nnz)) { 
         if (nnz > 2){
           for (overlapping_amount in seq(0,1 , 0.1)){
             p1 <- as.integer(psize); 
