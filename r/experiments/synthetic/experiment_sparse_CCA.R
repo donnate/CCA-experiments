@@ -29,7 +29,7 @@ THRES = 1e-3
 for (psize in c(ratio * n)) {
   for (sparsity in c(0.01, 0.05, 0.1, 0.2)){
       nnz = ceil(sparsity * psize)
-      if (max(r_pca, r) * nnz < psize & max(r_pca, r) < nnz) { 
+      if (max(r_pca, r) * nnz < psize && max(r_pca, r) < nnz) { 
         if (nnz > 2){
           for (overlapping_amount in seq(0,1 , 0.1)){
             p1 <- as.integer(psize); 
