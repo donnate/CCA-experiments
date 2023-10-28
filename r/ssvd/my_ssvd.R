@@ -334,6 +334,10 @@ my.ssvd.iter.thresh <-
         break
       }
       else {
+        #### Normalize
+        norm_u <- apply(u.cur, 2, norm)
+        inv_norm <- sapply(norm_u, function(x){ ifelse(x > 1e-4, 1/x, 1)})
+        u.cur <- u.cur %*% diag(inv_norm)
         # QR decomposition
         #u.cur <- qr.Q(qr(u.cur))
         #selected_col = which(apply(u.cur^2, 2, sum) >0)
@@ -375,6 +379,9 @@ my.ssvd.iter.thresh <-
         break
       }
       else {
+        norm_v <- apply(v.cur, 2, norm)
+        inv_norm <- sapply(norm_v, function(x){ ifelse(x > 1e-4, 1/x, 1)})
+        v.cur <- v.cur %*% diag(inv_norm)
         # QR decomposition
         #v.cur <- qr.Q(qr(v.cur))
         ### check if some rows are 0

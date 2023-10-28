@@ -1,5 +1,5 @@
 wd = getwd()
-#wd = "~/Documents/CCA-experiments/"
+wd = "~/Documents/CCA-experiments/"
 print(wd)
 setwd(wd)
 source("r/experiments/synthetic/experiment_functions.R")
@@ -119,12 +119,12 @@ for (psize in c(ratio * n)) {
               test1<-my.ssvd(example$S[1:p1, (p1+1):p],
                              Sigma_u = example$S[1:p1, 1:p1],
                              Sigma_v=example$S[(p1+1):p, (p1+1):p],
-                             r=r, method = "theory", reps=1, init_norm = TRUE)
+                             r=r, method = "theory-init", reps=1, init_norm = TRUE)
               Uhat = rbind(test1$u, test1$v)
               temp <- evaluate_results(Uhat= test1$u, 
                                        Vhat = test1$v, 
                                        example = example, 
-                                       name_method="SSVD-theory", 
+                                       name_method="SSVD-theory-init-norm", 
                                        overlapping_amount=overlapping_amount,
                                        lambdax= NA,
                                        lambday = NA, 

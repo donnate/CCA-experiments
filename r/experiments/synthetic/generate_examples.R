@@ -333,9 +333,11 @@ generate_example_sparse_product <- function(n, p1, p2,
   
   #Generate Multivariate Normal Data According to Sigma
   sqrt_Sigma <- sqrtm(Sigma)$B
-  Data <- matrix(rnorm(n = n * p_tot), ncol=p_tot) %*% sqrt_Sigma
-  X <- Data[, 1:p1]
-  Y <- Data[, (p1 + 1):(p1 + p2)]
+  Data <- matrix(rnorm(n = 2 * n * p_tot), ncol=p_tot) %*% sqrt_Sigma
+  X <- Data[1:n, 1:p1]
+  Y <- Data[1:n, (p1 + 1):(p1 + p2)]
+  Xnew <- Data[(n+1):(2*n), 1:p1]
+  Ynew <- Data[(n+1):(2*n), (p1 + 1):(p1 + p2)]
   print('Data generated.')
   print('--------------------------------------')
   Mask <- matrix(0, p_tot, p_tot)
@@ -353,6 +355,7 @@ generate_example_sparse_product <- function(n, p1, p2,
   return(list(Sigma=Sigma, Sigma0=Sigma0,
               S = S, sigma0hat =  sigma0hat, Mask= Mask,
               X=X, Y = Y, Data=Data, u=GT$u, v=GT$v, 
+              Xnew = Xnew, Ynew=Ynew,
               Sigmax=Sigmax, Sigmay=Sigmay
   ))
 }
