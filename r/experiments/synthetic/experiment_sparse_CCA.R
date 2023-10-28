@@ -296,7 +296,7 @@ for (psize in c(ratio * n)) {
                                   criterion=criterion,
                                   r_pca = r_pca, nnz=nnz)
           results <- rbind(results, temp )
-        write_excel_csv(results, paste0("experiments/synthetic/results/", name_exp, "_", criterion, ".csv"))
+        write_excel_csv(results, paste0("r/experiments/synthetic/results/", name_exp, "_", criterion, ".csv"))
         }
       }
     }
