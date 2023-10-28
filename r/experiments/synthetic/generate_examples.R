@@ -282,28 +282,31 @@ generate_example_sparse_product <- function(n, p1, p2,
   s_pca2  <- s_pca
   Lambda_pca <- rep(lambda_pca, r_pca)
   # generate vcovariance matrix for X and Y
-  u1 = matrix(0, p1, r_pca)
-  u1[s_pca, ] <- matrix(runif(n = nnzeros * r_pca, max = 3, min=1), nrow = nnzeros, ncol = r_pca) * matrix(sample(c(-1,1), nnzeros * r_pca, replace=TRUE), nrow=nnzeros, ncol=r_pca)
-  # Normalize u1
-  u1[s_pca, 1:r_pca] <- u1[s_pca,1:r_pca] %*% (sqrtm(t(u1[s_pca,1:r_pca]) %*% u1[s_pca, 1:r_pca])$Binv)
-  T1 <- u1 %*% diag(Lambda_pca) %*% t(u1)
-  if (normalize_diagonal){
-    diag(T1) <- 1
-    Sigma[1:p1, 1:p1] <- T1
-  }else{
-    Sigma[1:p1, 1:p1] <- Sigma[1:p1, 1:p1] + T1 
-  }
-  
-  ### Same for Sigma_y
-  u2 <- matrix(0, pp[2], r_pca)
-  u2[s_pca2, 1:r_pca] <- matrix(runif( nnzeros * r_pca,max = 3, min=1), nrow=nnzeros)  * matrix(sample(c(-1,1), nnzeros*r_pca, replace=TRUE), nrow=nnzeros, ncol=r_pca)
-  u2[s_pca2, 1:r_pca] <- u2[s_pca2,1:r_pca] %*% (sqrtm(t(u2[s_pca2,1:r_pca]) %*% u2[s_pca2,1:r_pca])$Binv)
-  T2 <- u2 %*% diag(Lambda_pca) %*% t(u2)
-  if (normalize_diagonal){
-    diag(T2) <- 1
-    Sigma[(p1 + 1):(p1 + p2), (p1 + 1):(p1 + p2)] <- T2
-  }else{
-    Sigma[(p1 + 1):(p1 + p2), (p1 + 1):(p1 + p2)] <- T2 + Sigma[(p1 + 1):(p1 + p2), (p1 + 1) : (p1 + p2)]
+
+  if (r_pca < 0){
+    u1 = matrix(0, p1, r_pca)
+    u1[s_pca, ] <- matrix(runif(n = nnzeros * r_pca, max = 3, min=1), nrow = nnzeros, ncol = r_pca) * matrix(sample(c(-1,1), nnzeros * r_pca, replace=TRUE), nrow=nnzeros, ncol=r_pca)
+    # Normalize u1
+    u1[s_pca, 1:r_pca] <- u1[s_pca,1:r_pca] %*% (sqrtm(t(u1[s_pca,1:r_pca]) %*% u1[s_pca, 1:r_pca])$Binv)
+    T1 <- u1 %*% diag(Lambda_pca) %*% t(u1)
+    if (normalize_diagonal){
+      diag(T1) <- 1
+      Sigma[1:p1, 1:p1] <- T1
+    }else{
+      Sigma[1:p1, 1:p1] <- Sigma[1:p1, 1:p1] + T1 
+    }
+    
+    ### Same for Sigma_y
+    u2 <- matrix(0, pp[2], r_pca)
+    u2[s_pca2, 1:r_pca] <- matrix(runif( nnzeros * r_pca,max = 3, min=1), nrow=nnzeros)  * matrix(sample(c(-1,1), nnzeros*r_pca, replace=TRUE), nrow=nnzeros, ncol=r_pca)
+    u2[s_pca2, 1:r_pca] <- u2[s_pca2,1:r_pca] %*% (sqrtm(t(u2[s_pca2,1:r_pca]) %*% u2[s_pca2,1:r_pca])$Binv)
+    T2 <- u2 %*% diag(Lambda_pca) %*% t(u2)
+    if (normalize_diagonal){
+      diag(T2) <- 1
+      Sigma[(p1 + 1):(p1 + p2), (p1 + 1):(p1 + p2)] <- T2
+    }else{
+      Sigma[(p1 + 1):(p1 + p2), (p1 + 1):(p1 + p2)] <- T2 + Sigma[(p1 + 1):(p1 + p2), (p1 + 1) : (p1 + p2)]
+    }
   }
   Sigmax = Sigma[1:p1,1:p1];
   Sigmay = Sigma[(p1+1):p_tot,(p1+1):p_tot];
