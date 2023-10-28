@@ -60,7 +60,7 @@ hard.thresh <-
     # thr might be vector
   {
     if (length(thr) == 1) {
-      return(hard.thresh.scaler(x, thr))
+      return(hard.thresh.scalar(x, thr))
     }
     else {
       if (ncol(x) != length(thr)) {
@@ -68,15 +68,15 @@ hard.thresh <-
       }
       ans <- x
       for (i in 1:length(thr)) {
-        ans[, i] <- hard.thresh.scaler(x[, i], thr[i])
+        ans[, i] <- hard.thresh.scalar(x[, i], thr[i])
       }
       return(ans)
     }
   }
 
-hard.thresh.scaler <-
+hard.thresh.scalar <-
   function (x, thr)
-    # thr is scaler
+    # thr is scalar
   {
     ans <- x
     ans[x < thr & x > -thr] <- 0

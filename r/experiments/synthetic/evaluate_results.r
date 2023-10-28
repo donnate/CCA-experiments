@@ -14,7 +14,7 @@ evaluate_results <- function(Uhat, Vhat, example,
   n = nrow(example$X)
   r = ncol(example$u)
   sparsity = length(which(apply(example$u^2, 1, sum)>0))
-  silly_benchmark = subdistance(matrix(0, p1, 2), example$u)
+  silly_benchmark = subdistance(matrix(0, p1, r), example$u)
   data.frame("method" = name_method,
              "exp" = it,
              "n" = n,

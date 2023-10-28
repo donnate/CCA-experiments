@@ -2,7 +2,7 @@ seed =1
 r=3
 name_exp <- "test.csv"
 n <- 200
-r_pca = 10
+r_pca = 3
 criterion = "prediction"
 normalize_diagonal <- T
 ratio <- 1.5

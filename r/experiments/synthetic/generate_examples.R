@@ -80,7 +80,7 @@ generate_toeplitz_example <- function(n, p1, p2,  a = 0.4,
   # This generates a dataset (X,Y) from a multivariate normal where Sigma_XX = I
   # Sigma_YY = I, and Sigma_XY = toeplitz(a) on a set of nnzeros rows, 0 elsewhere
   # n: number of samples
-  # p1: nb of features for X 
+  # p1: nb of features for X
   # p2: nb of features for Y
   # nnzeros: number of non zero rows of U and V
   # a : strength of the Toeplitz parameter
@@ -88,7 +88,7 @@ generate_toeplitz_example <- function(n, p1, p2,  a = 0.4,
   # Returns:
   # S : empirical covariance matrix X^TY
   # Sigma: underlying (population) covariance Sigma_{XY}
-  # u: ground truth for u 
+  # u: ground truth for u
   # v: ground truth for v
   ###
   p_tot <- p1 + p2
@@ -232,7 +232,7 @@ generate_example_none_trivial_pca <- function(n, p1, p2,
   sigma0hat <- S * Mask
   # Generate ground truth canonical vectors
   Sigma_X_inv <- solve(Sigma[1:p1, 1:p1])
-  Sigma_Y_inv <-  solve(Sigma[(p1+1):(p_tot), (p1+1):(p_tot)])
+  Sigma_Y_inv <-  solve(Sigma[(p1 + 1):(p_tot), (p1 + 1):(p_tot)])
   GT = svd(Sigma_X_inv %*% Sigma[1:p1, (p1 + 1):p_tot] %*% Sigma_Y_inv, nu = r, nv = r)
   return(list(Sigma=Sigma, Sigma0=Sigma0,
               S = S, sigma0hat =  sigma0hat, Mask= Mask,
