@@ -10,7 +10,7 @@ for n in $n_values; do
   for r in $r_values; do
     for r_pca in $rpca_values; do
        for ratio in $ratio_values; do
-          sbatch experiment/synthetic/sparse_experiment.sh "$n" "$r" "$r_pca" prediction 1 "$ratio"
+          sbatch r/experiments/synthetic/sparse_experiment.sh "$n" "$r" "$r_pca" prediction 1 "$ratio"
         done
     done
   done
