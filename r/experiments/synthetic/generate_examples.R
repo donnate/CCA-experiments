@@ -283,7 +283,7 @@ generate_example_sparse_product <- function(n, p1, p2,
   Lambda_pca <- rep(lambda_pca, r_pca)
   # generate vcovariance matrix for X and Y
 
-  if (r_pca < 0){
+  if (r_pca > 0){
     u1 = matrix(0, p1, r_pca)
     u1[s_pca, ] <- matrix(runif(n = nnzeros * r_pca, max = 3, min=1), nrow = nnzeros, ncol = r_pca) * matrix(sample(c(-1,1), nnzeros * r_pca, replace=TRUE), nrow=nnzeros, ncol=r_pca)
     # Normalize u1
