@@ -1,5 +1,5 @@
 wd = getwd()
-wd = "~/Documents/CCA-experiments/"
+#wd = "~/Documents/CCA-experiments/"
 print(wd)
 setwd(wd)
 source("r/experiments/synthetic/experiment_functions.R")
