@@ -1,5 +1,5 @@
 wd = getwd()
-wd = "~/Documents/CCA-experiments/"
+#wd = "~/Documents/CCA-experiments/"
 print(wd)
 setwd(wd)
 source("r/experiments/synthetic/experiment_functions.R")
@@ -42,7 +42,7 @@ for (psize in c(ratio * n)) {
             example <- generate_example_sparse_product(n, p1, p2, 
                                                 r_pca = r_pca, 
                                                 nnzeros = nnz,
-                                                theta = diag(seq(from = 0.5, to=0.4, 
+                                                theta = diag(seq(from = 0.75, to=0.55, 
                                                                 length.out = r)),
                                                 lambda_pca = 1,
                                                 r=r, 
