@@ -34,7 +34,18 @@ for (psize in c(ratio * n)) {
       print(c(max(r_pca, r) * nnz, psize, max(r_pca, r), nnz))
       if ((max(r_pca, r) * nnz < psize) && (max(r_pca, r) < nnz)) { 
         if (nnz > 2){
-          for (overlapping_amount in seq(0,1 , 0.1)){
+          for(signal_strength in c("high", "medium", "low")){
+            if ( signal_strength == "high"){
+                thetas <- diag(seq(0.95, 0.8, length.out = r))
+              }else{
+                if ( signal_strength == "medium"){
+                  thetas <- diag(seq(0.65, 0.55, length.out = r))
+                }
+                else{
+                  thetas <- diag(seq(0.5, 0.35, length.out = r))
+                }
+              }
+          for (overlapping_amount in c(0, 1)){
             p1 <- as.integer(psize); 
             p2 <- as.integer(psize)
             print(c(n, p1, p2, nnz))
@@ -42,8 +53,7 @@ for (psize in c(ratio * n)) {
             example <- generate_example_sparse_product(n, p1, p2, 
                                                 r_pca = r_pca, 
                                                 nnzeros = nnz,
-                                                theta = diag(seq(from = 0.75, to=0.55, 
-                                                                length.out = r)),
+                                                theta = thetas,
                                                 lambda_pca = 1,
                                                 r=r, 
                                                 overlapping_amount = overlapping_amount,
@@ -74,21 +84,40 @@ for (psize in c(ratio * n)) {
                                       it=it,
                                       normalize_diagonal=normalize_diagonal,
                                       criterion=criterion,
-                                      r_pca = r_pca, nnz=nnz)
+                                      r_pca = r_pca, nnz=nnz,
+                                      signal_strength=signal_strength)
               if (length(results)==0){
                 results=temp
               }else{
                 results <- rbind(results, temp )
-                
+               
               }
+              #### Evaluate goodness of initial fit
+              temp2 <- evaluate_results(Uhat= test1$u_init, 
+                                        Vhat = test1$v_init, 
+                                        example = example, 
+                                        name_method="SSVD-theory-just-init", 
+                                        overlapping_amount=overlapping_amount,
+                                        lambdax= NA,
+                                        lambday = NA, 
+                                        thres = THRES,
+                                        it=it,
+                                        normalize_diagonal=normalize_diagonal,
+                                        criterion=criterion,
+                                        r_pca = r_pca, nnz=nnz,
+                                        signal_strength=signal_strength)
+              results <- rbind(results, temp2)
+
             }, error = function(e) {
               # Print the error message
               cat("Error occurred in method sparse SSVD (theory)", ":", conditionMessage(e), "\n")
               # Skip to the next iteration
             })
             
+
+
             ssvd_results <- tryCatch({
-              test1<-my.ssvd(example$S[1:p1, (p1+1):p],
+              test1 <- my.ssvd(example$S[1:p1, (p1+1):p],
                             Sigma_u = example$S[1:p1, 1:p1],
                             Sigma_v=example$S[(p1+1):p, (p1+1):p],
                             r=r, 
@@ -105,11 +134,27 @@ for (psize in c(ratio * n)) {
                                       it=it,
                                       normalize_diagonal=normalize_diagonal,
                                       criterion=criterion,
-                                      r_pca = r_pca, nnz=nnz)
+                                      r_pca = r_pca, nnz=nnz,
+                                      signal_strength=signal_strength)
               if (length(results)==0){
                 results=temp
               }else{
-                results <- rbind(results, temp )
+                results <- rbind(results, temp)
+                #### Evaluate goodness of initial fit
+                temp2 <- evaluate_results(Uhat= test1$u_init, 
+                                      Vhat = test1$v_init, 
+                                      example = example, 
+                                      name_method="SSVD-method-just-init", 
+                                      overlapping_amount=overlapping_amount,
+                                      lambdax= NA,
+                                      lambday = NA, 
+                                      thres = THRES,
+                                      it=it,
+                                      normalize_diagonal=normalize_diagonal,
+                                      criterion=criterion,
+                                      r_pca = r_pca, nnz=nnz,
+                                      signal_strength=signal_strength)
+                results <- rbind(results, temp2)
                 
               }
             }, error = function(e) {
@@ -135,7 +180,8 @@ for (psize in c(ratio * n)) {
                                        it=it,
                                        normalize_diagonal=normalize_diagonal,
                                        criterion=criterion,
-                                       r_pca = r_pca, nnz=nnz)
+                                       r_pca = r_pca, nnz=nnz,
+                                       signal_strength=signal_strength)
               if (length(results)==0){
                 results=temp
               }else{
@@ -166,7 +212,8 @@ for (psize in c(ratio * n)) {
                                        it=it,
                                        normalize_diagonal=normalize_diagonal,
                                        criterion=criterion,
-                                       r_pca = r_pca, nnz=nnz)
+                                       r_pca = r_pca, nnz=nnz,
+                                       signal_strength=signal_strength)
               if (length(results)==0){
                 results=temp
               }else{
@@ -207,7 +254,8 @@ for (psize in c(ratio * n)) {
                                        it=it,
                                        normalize_diagonal=normalize_diagonal,
                                        criterion=criterion,
-                                       r_pca = r_pca, nnz=nnz)
+                                       r_pca = r_pca, nnz=nnz,
+                                       signal_strength=signal_strength)
               
               results <- rbind(results, temp)
               
@@ -223,7 +271,8 @@ for (psize in c(ratio * n)) {
                                        it=it,
                                        normalize_diagonal=normalize_diagonal,
                                        criterion=criterion,
-                                       r_pca = r_pca, nnz=nnz)
+                                       r_pca = r_pca, nnz=nnz,
+                                       signal_strength=signal_strength)
               results <- rbind(results, temp)
               selected_rows = which(apply(res_tg$initu^2, 1, sum)>0)
               selected_rows.v = which(apply(res_tg$initv^2, 1, sum)>0)
@@ -254,7 +303,8 @@ for (psize in c(ratio * n)) {
                                          it=it,
                                          normalize_diagonal=normalize_diagonal,
                                          criterion=criterion,
-                                         r_pca = r_pca, nnz=nnz)
+                                         r_pca = r_pca, nnz=nnz,
+                                         signal_strength=signal_strength)
                 
                 print(dim(temp))
                 print(dim(results))
@@ -297,12 +347,14 @@ for (psize in c(ratio * n)) {
                                   it=it,
                                   normalize_diagonal=normalize_diagonal,
                                   criterion=criterion,
-                                  r_pca = r_pca, nnz=nnz)
+                                  r_pca = r_pca, nnz=nnz,
+                                  signal_strength=signal_strength)
           results <- rbind(results, temp )
         write_excel_csv(results, paste0("r/experiments/synthetic/results/", name_exp, "_", criterion, ".csv"))
         }
       }
-    }
+        }
+      }
   }
 }
 
