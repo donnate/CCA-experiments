@@ -68,7 +68,7 @@ for (psize in c(ratio * n)) {
             fantope_solution = NULL
             
             ssvd_results <- tryCatch({
-              test1<-my.ssvd(example$S[1:p1, (p1+1):p],
+              test1<-my.ssvd(atanh(example$S[1:p1, (p1+1):p]),
                             Sigma_u = example$S[1:p1, 1:p1],
                             Sigma_v=example$S[(p1+1):p, (p1+1):p],
                             r=r, method = "theory", reps=1)

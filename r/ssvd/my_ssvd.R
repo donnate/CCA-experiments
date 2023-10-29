@@ -209,8 +209,11 @@ ssvd.initial <-
       I.col <- (order(colnorm2, decreasing = TRUE))[1:min(r +
                                                             10, pv)]
     }
-    # SVD on selected submatrix
-    x.sub.svd <- svd(x[I.row, I.col, drop = FALSE], nu = r, nv = r)
+    # CCA on selected submatrix
+    Sigma_u_inv = pinv(Sigma_u[I.row, I.row])
+    Sigma_v_inv = pinv(Sigma_v[I.col, I.col])
+    x.sub.svd <- svd(Sigma_u_inv %*% x[I.row, I.col, drop = FALSE] %*% Sigma_v_inv, 
+                     nu = r, nv = r)
     # expanding
     u.hat <- matrix(0, pu, r)
     v.hat <- matrix(0, pv, r)
