@@ -150,7 +150,7 @@ my.ssvd <-
     # the main function
     # init_norm: whether to normalize the initial estimator.
   {
-    ans.initial <- ssvd.initial(x, Sigma_u = Sigma_u, Sigma_v = Sigma_v, 
+    ans.initial <- ssvd.initial(atanh(x), Sigma_u = Sigma_u, Sigma_v = Sigma_v, 
                                 method = method, alpha.method = alpha.method,
                                 alpha.theory = alpha.theory, huber.beta = huber.beta,
                                 sigma = sigma, r = r, init_norm = init_norm)

@@ -68,7 +68,7 @@ for (psize in c(ratio * n)) {
             fantope_solution = NULL
             
             ssvd_results <- tryCatch({
-              test1<-my.ssvd(atanh(example$S[1:p1, (p1+1):p]),
+              test1<-my.ssvd((example$S[1:p1, (p1+1):p]),
                             Sigma_u = example$S[1:p1, 1:p1],
                             Sigma_v=example$S[(p1+1):p, (p1+1):p],
                             r=r, method = "theory", reps=1)
@@ -117,7 +117,7 @@ for (psize in c(ratio * n)) {
 
 
             ssvd_results <- tryCatch({
-              test1 <- my.ssvd(example$S[1:p1, (p1+1):p],
+              test1 <- my.ssvd((example$S[1:p1, (p1+1):p]),
                             Sigma_u = example$S[1:p1, 1:p1],
                             Sigma_v=example$S[(p1+1):p, (p1+1):p],
                             r=r, 
@@ -164,7 +164,7 @@ for (psize in c(ratio * n)) {
             })
             
             ssvd_results <- tryCatch({
-              test1<-my.ssvd(example$S[1:p1, (p1+1):p],
+              test1<-my.ssvd((example$S[1:p1, (p1+1):p]),
                              Sigma_u = example$S[1:p1, 1:p1],
                              Sigma_v=example$S[(p1+1):p, (p1+1):p],
                              r=r, method = "theory", reps=1, init_norm = TRUE)
@@ -195,7 +195,7 @@ for (psize in c(ratio * n)) {
             })
             
             ssvd_results <- tryCatch({
-              test1<-my.ssvd(example$S[1:p1, (p1+1):p],
+              test1<-my.ssvd((example$S[1:p1, (p1+1):p]),
                              Sigma_u = example$S[1:p1, 1:p1],
                              Sigma_v=example$S[(p1+1):p, (p1+1):p],
                              r=r, 
@@ -281,6 +281,28 @@ for (psize in c(ratio * n)) {
               
               print("Selected rows")
               print(selected_rows)
+              #### Try one SSVD with Fantope init
+              test <- my.ssvd.iter.thresh(example$S[1:p1, (p1+1):p], 
+                                          Sigma_u = example$S[1:p1, 1:p1],
+                                          Sigma_v=example$S[(p1+1):p, (p1+1):p],
+                                          method = "theory", u.old = res_tg$initu,
+                                          v.old = res_tg$initv, r = r,
+                                          gamma.u = sqrt(2), gamma.v = sqrt(2), dothres = "hard", tol = 1e-08,
+                                          n.iter = 100, n.boot = 100, non.orth = FALSE, reps = 1)
+              temp <- evaluate_results(Uhat= res_tg$initu, 
+                                       Vhat = res_tg$initv, 
+                                       example = example, 
+                                       name_method="thresholding-Fantope-init", 
+                                       overlapping_amount=overlapping_amount,
+                                       lambdax=  res_tg$lambda,
+                                       lambday =   res_tg$k, 
+                                       thres = THRES,
+                                       it=it,
+                                       normalize_diagonal=normalize_diagonal,
+                                       criterion=criterion,
+                                       r_pca = r_pca, nnz=nnz,
+                                       signal_strength=signal_strength)
+              results <- rbind(results, temp)
               
               
               
