@@ -341,6 +341,29 @@ my.ssvd.iter.thresh <-
       }
       else {
         #### Normalize
+        #norm_u <- apply(u.cur, 2, norm)
+        #inv_norm <- sapply(norm_u, function(x){ ifelse(x > 1e-4, 1/x, 1)})
+        #u.cur <- u.cur %*% diag(inv_norm) ### Sigma_X U Lambda= Sigma_XY V
+        # QR decomposition
+        #u.cur <- qr.Q(qr(u.cur))
+        #selected_col = which(apply(u.cur^2, 2, sum) >0)
+        # norm_u = t(u.cur) %*% Sigma_u %*% u.cur
+        # #index_zero = which(diag(norm_u) < 1e-8)
+        # index_non_zero = which(diag(norm_u) > 1e-6)
+        # #print(index_zero)
+        # #for (ind in index_zero){
+        # #  norm_u[ind, ind] = 1
+        # #}
+        # #u.cur[index_non_zero, ] <- solve(Sigma_u[index_non_zero, index_non_zero]) %*% u.cur #%*% (sqrtm(norm_u)$Binv)
+        # u.cur[index_non_zero, ] <- solve(Sigma_u[index_non_zero, index_non_zero]) %*% u.cur[index_non_zero, ]
+        # norm_u = t(u.cur[index_non_zero, ]) %*% Sigma_u[index_non_zero, index_non_zero] %*% u.cur[index_non_zero, ]
+        # u.cur[index_non_zero, ] <- u.cur[index_non_zero, ] %*% sqrtm(norm_u)$Binv
+        # u.cur[-index_non_zero, ] <- 0
+        # #norm_u <- apply(u.cur, 2, norm)
+        # #inv_norm <- sapply(norm_u, function(x){ ifelse(x > 1e-6, 1/x, 1)})
+        # #u.cur <- u.cur %*% diag(inv_norm)
+        # print("check norm")
+        # print(t(u.cur) %*% Sigma_u %*% u.cur)
         norm_u <- apply(u.cur, 2, norm)
         inv_norm <- sapply(norm_u, function(x){ ifelse(x > 1e-4, 1/x, 1)})
         u.cur <- u.cur %*% diag(inv_norm)
@@ -354,6 +377,7 @@ my.ssvd.iter.thresh <-
           norm_u[ind, ind] = 1
         }
         u.cur <- u.cur %*% (sqrtm(norm_u)$Binv)
+        #dist.u <- subsp.dist.orth(u.cur, u.old)
         dist.u <- subsp.dist.orth(u.cur, u.old)
         #print(c("Dim u", dim(u.cur)))
       }
@@ -385,6 +409,17 @@ my.ssvd.iter.thresh <-
         break
       }
       else {
+        # norm_v = t(v.cur) %*% Sigma_v %*% v.cur
+        # #index_zero = which(diag(norm_u) < 1e-8)
+        # index_non_zero = which(diag(norm_v) > 1e-6)
+        # #v.cur[index_non_zero, ] <- solve(Sigma_v[index_non_zero, index_non_zero]) %*% v.cur #%*% (sqrtm(norm_u)$Binv)
+        # v.cur[index_non_zero, ] <- solve(Sigma_v[index_non_zero, index_non_zero]) %*% v.cur[index_non_zero, ]
+        # norm_v = t(v.cur[index_non_zero, ]) %*% Sigma_v[index_non_zero, index_non_zero] %*% v.cur[index_non_zero, ]
+        # v.cur[index_non_zero, ] <- v.cur[index_non_zero, ] %*% sqrtm(norm_v)$Binv
+        # v.cur[-index_non_zero, ] <- 0
+        # print(v.cur)
+        #inv_norm <- sapply(norm_v, function(x){ ifelse(x > 1e-6, 1/x, 1)})
+        #v.cur <- v.cur %*% diag(inv_norm)
         norm_v <- apply(v.cur, 2, norm)
         inv_norm <- sapply(norm_v, function(x){ ifelse(x > 1e-4, 1/x, 1)})
         v.cur <- v.cur %*% diag(inv_norm)
@@ -397,6 +432,21 @@ my.ssvd.iter.thresh <-
           norm_v[ind, ind] = 1
         }
         v.cur <- v.cur %*% (sqrtm(norm_v)$Binv)
+        print("check norm v")
+        print(t(v.cur) %*% Sigma_v %*% v.cur)
+        
+        #norm_v <- apply(v.cur, 2, norm)
+        #inv_norm <- sapply(norm_v, function(x){ ifelse(x > 1e-4, 1/x, 1)})
+        #v.cur <- v.cur %*% diag(inv_norm)
+        # QR decomposition
+        #v.cur <- qr.Q(qr(v.cur))
+        ### check if some rows are 0
+        #norm_v = t(v.cur) %*% Sigma_v %*% v.cur
+        #index_zero = which(diag(norm_v) < 1e-8)
+        #for (ind in index_zero){
+        #  norm_v[ind, ind] = 1
+        #}
+        #v.cur <- v.cur %*% (sqrtm(norm_v)$Binv)
         dist.v <- subsp.dist.orth(v.cur, v.old)
         #print(c("Dim v", dim(v.cur)))
         #print(c("Dim u after v", dim(u.cur)))

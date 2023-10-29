@@ -289,8 +289,8 @@ for (psize in c(ratio * n)) {
                                           v.old = res_tg$initv, r = r,
                                           gamma.u = sqrt(2), gamma.v = sqrt(2), dothres = "hard", tol = 1e-08,
                                           n.iter = 100, n.boot = 100, non.orth = FALSE, reps = 1)
-              temp <- evaluate_results(Uhat= res_tg$initu, 
-                                       Vhat = res_tg$initv, 
+              temp <- evaluate_results(Uhat= test$u, 
+                                       Vhat = test$v, 
                                        example = example, 
                                        name_method="thresholding-Fantope-init", 
                                        overlapping_amount=overlapping_amount,
