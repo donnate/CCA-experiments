@@ -6,7 +6,7 @@ evaluate_results <- function(Uhat, Vhat, example,
                              lambday = NULL, it=1,
                              normalize_diagonal=TRUE,
                              criterion="prediction", r_pca = 0, 
-                             nnz=0){
+                             nnz=0,signal_strength="high"){
   Uhat_tot = rbind(Uhat, Vhat)
   U_tot = rbind(example$u, example$v)
   p1 = ncol(example$X)
@@ -25,6 +25,7 @@ evaluate_results <- function(Uhat, Vhat, example,
              "r" = r,
              "r_pca" = r_pca,
              "criterion" = criterion,
+             "signal_strength" = signal_strength,
              "overlapping_amount" = overlapping_amount,
              "zero_benchmark" = silly_benchmark,
              "nb_discoveries" = sum(apply(Uhat_tot^2, 1, sum)>0),

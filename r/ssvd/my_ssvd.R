@@ -160,6 +160,7 @@ my.ssvd <-
                      dothres = dothres, r = r, tol = tol, n.iter = n.iter,
                      n.boot = n.boot, sigma = ans.initial$sigma.hat, 
                      non.orth = non.orth, reps = reps)
+
   }
 
 ssvd.initial <-
@@ -284,6 +285,8 @@ my.ssvd.iter.thresh <-
     i.iter = 1
     u.cur <- u.old
     v.cur <- v.old
+    u_init <- u.old
+    v_init <- v.old
     
     
     
@@ -440,10 +443,14 @@ my.ssvd.iter.thresh <-
                   u.orth = u.old %*% diag(sign(apply(u.cur*u.old, 2, sum)), r, r),
                   v.orth = v.old %*% diag(sign(apply(v.cur*v.old, 2, sum)), r, r),
                   d = abs(d.cur), niter = i.iter - 1,
-                  sigma.hat = sigma.hat, dist.u = dist.u, dist.v = dist.v))
+                  sigma.hat = sigma.hat, dist.u = dist.u, dist.v = dist.v,
+                  u_init = u_init,
+                  v_init = v_init))
     } else{
       return(list(u = u.cur, v = v.cur, d = abs(d.cur), niter = i.iter - 1,
-                  sigma.hat = sigma.hat, dist.u = dist.u, dist.v = dist.v))
+                  sigma.hat = sigma.hat, dist.u = dist.u, dist.v = dist.v,
+                  u_init = u_init,
+                  v_init = v_init))
     }
   }
 
