@@ -123,12 +123,14 @@ generate_toeplitz_example <- function(n, p1, p2,  a = 0.4,
   S <- cov(Data)
   sigma0hat <- S * Mask
   # Generate ground truth canonical vectors
-  Sigma_X_inv <- solve(Sigma[1:p1, 1:p1])
-  Sigma_Y_inv <-  solve(Sigma[(p1+1):(p_tot), (p1+1):(p_tot)])
+  Sigma_X_inv <- sqrtm(Sigma[1:p1, 1:p1])$Binv
+  Sigma_Y_inv <-  sqrtm(Sigma[(p1+1):(p_tot), (p1+1):(p_tot)])$Binv
   GT = svd(Sigma_X_inv %*% Sigma[1:p1, (p1+1):p_tot] %*% Sigma_Y_inv, nu = r, nv = r)
   return(list(Sigma=Sigma, Sigma0=Sigma0,
               S = S, sigma0hat =  sigma0hat, Mask= Mask,
-              X=X, Y = Y, Data=Data, u=GT$u, v=GT$v,
+              X=X, Y = Y, Data=Data, 
+              u=Sigma_X_inv %*% GT$u,
+              v=Sigma_Y_inv %*% GT$v,
               Sigmax=Sigmax, Sigmay=Sigmay
   ))
 }
@@ -349,12 +351,13 @@ generate_example_sparse_product <- function(n, p1, p2,
   S <- cov(Data)
   sigma0hat <- S * Mask
   # Generate ground truth canonical vectors
-  Sigma_X_inv <- solve(Sigma[1:p1, 1:p1])
-  Sigma_Y_inv <-  solve(Sigma[(p1+1):(p_tot), (p1+1):(p_tot)])
+  Sigma_X_inv <- sqrtm(Sigma[1:p1, 1:p1])$Binv
+  Sigma_Y_inv <-  sqrtm(Sigma[(p1+1):(p_tot), (p1+1):(p_tot)])$Binv
   GT = svd(Sigma_X_inv %*% Sigma[1:p1, (p1 + 1):p_tot] %*% Sigma_Y_inv, nu = r, nv = r)
   return(list(Sigma=Sigma, Sigma0=Sigma0,
               S = S, sigma0hat =  sigma0hat, Mask= Mask,
-              X=X, Y = Y, Data=Data, u=GT$u, v=GT$v, 
+              X=X, Y = Y, Data=Data, u=Sigma_X_inv %*% GT$u, 
+              v= Sigma_Y_inv %*% GT$v, 
               Xnew = Xnew, Ynew=Ynew,
               Sigmax=Sigmax, Sigmay=Sigmay
   ))

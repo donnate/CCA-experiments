@@ -114,49 +114,50 @@ for (psize in c(ratio * n)) {
               # Skip to the next iteration
             })
             
-
-
+            #
             ssvd_results <- tryCatch({
-              test1 <- my.ssvd((example$S[1:p1, (p1+1):p]),
-                            Sigma_u = example$S[1:p1, 1:p1],
-                            Sigma_v=example$S[(p1+1):p, (p1+1):p],
-                            r=r, 
-                            method = "method")
+              test1<-my.ssvd((example$S[1:p1, (p1+1):p]),
+                             Sigma_u = example$S[1:p1, 1:p1],
+                             Sigma_v=example$S[(p1+1):p, (p1+1):p],
+                             x_full = example$S,
+                             r=r, method = "theory", reps=1,
+                             init_type = "full")
               Uhat = rbind(test1$u, test1$v)
               temp <- evaluate_results(Uhat= test1$u, 
-                                      Vhat = test1$v, 
-                                      example = example, 
-                                      name_method="SSVD-method", 
-                                      overlapping_amount=overlapping_amount,
-                                      lambdax= NA,
-                                      lambday = NA, 
-                                      thres = THRES,
-                                      it=it,
-                                      normalize_diagonal=normalize_diagonal,
-                                      criterion=criterion,
-                                      r_pca = r_pca, nnz=nnz,
-                                      signal_strength=signal_strength)
+                                       Vhat = test1$v, 
+                                       example = example, 
+                                       name_method="SSVD-row_selection_full_x", 
+                                       overlapping_amount=overlapping_amount,
+                                       lambdax= NA,
+                                       lambday = NA, 
+                                       thres = THRES,
+                                       it=it,
+                                       normalize_diagonal=normalize_diagonal,
+                                       criterion=criterion,
+                                       r_pca = r_pca, nnz=nnz,
+                                       signal_strength=signal_strength)
               if (length(results)==0){
                 results=temp
               }else{
-                results <- rbind(results, temp)
-                #### Evaluate goodness of initial fit
-                temp2 <- evaluate_results(Uhat= test1$u_init, 
-                                      Vhat = test1$v_init, 
-                                      example = example, 
-                                      name_method="SSVD-method-just-init", 
-                                      overlapping_amount=overlapping_amount,
-                                      lambdax= NA,
-                                      lambday = NA, 
-                                      thres = THRES,
-                                      it=it,
-                                      normalize_diagonal=normalize_diagonal,
-                                      criterion=criterion,
-                                      r_pca = r_pca, nnz=nnz,
-                                      signal_strength=signal_strength)
-                results <- rbind(results, temp2)
+                results <- rbind(results, temp )
                 
               }
+              #### Evaluate goodness of initial fit
+              temp2 <- evaluate_results(Uhat= test1$u_init, 
+                                        Vhat = test1$v_init, 
+                                        example = example, 
+                                        name_method="SSVD-row_selection_full_x-just-init", 
+                                        overlapping_amount=overlapping_amount,
+                                        lambdax= NA,
+                                        lambday = NA, 
+                                        thres = THRES,
+                                        it=it,
+                                        normalize_diagonal=normalize_diagonal,
+                                        criterion=criterion,
+                                        r_pca = r_pca, nnz=nnz,
+                                        signal_strength=signal_strength)
+              results <- rbind(results, temp2)
+              
             }, error = function(e) {
               # Print the error message
               cat("Error occurred in method sparse SSVD (theory)", ":", conditionMessage(e), "\n")
@@ -167,12 +168,14 @@ for (psize in c(ratio * n)) {
               test1<-my.ssvd((example$S[1:p1, (p1+1):p]),
                              Sigma_u = example$S[1:p1, 1:p1],
                              Sigma_v=example$S[(p1+1):p, (p1+1):p],
-                             r=r, method = "theory", reps=1, init_norm = TRUE)
+                             x_full = NULL,
+                             r=r, method = "theory", reps=1,
+                             init_type = "full")
               Uhat = rbind(test1$u, test1$v)
               temp <- evaluate_results(Uhat= test1$u, 
                                        Vhat = test1$v, 
                                        example = example, 
-                                       name_method="SSVD-theory-init-norm", 
+                                       name_method="SSVD-top-rows-original", 
                                        overlapping_amount=overlapping_amount,
                                        lambdax= NA,
                                        lambday = NA, 
@@ -188,43 +191,30 @@ for (psize in c(ratio * n)) {
                 results <- rbind(results, temp )
                 
               }
+              #### Evaluate goodness of initial fit
+              temp2 <- evaluate_results(Uhat= test1$u_init, 
+                                        Vhat = test1$v_init, 
+                                        example = example, 
+                                        name_method="top-rows-original-just-init", 
+                                        overlapping_amount=overlapping_amount,
+                                        lambdax= NA,
+                                        lambday = NA, 
+                                        thres = THRES,
+                                        it=it,
+                                        normalize_diagonal=normalize_diagonal,
+                                        criterion=criterion,
+                                        r_pca = r_pca, nnz=nnz,
+                                        signal_strength=signal_strength)
+              results <- rbind(results, temp2)
+              
             }, error = function(e) {
               # Print the error message
-              cat("Error occurred in method sparse SSVD (theory init-norm)", ":", conditionMessage(e), "\n")
+              cat("Error occurred in method sparse SSVD (theory)", ":", conditionMessage(e), "\n")
               # Skip to the next iteration
             })
+          
             
-            ssvd_results <- tryCatch({
-              test1<-my.ssvd((example$S[1:p1, (p1+1):p]),
-                             Sigma_u = example$S[1:p1, 1:p1],
-                             Sigma_v=example$S[(p1+1):p, (p1+1):p],
-                             r=r, 
-                             method = "method", init_norm = TRUE)
-              Uhat = rbind(test1$u, test1$v)
-              temp <- evaluate_results(Uhat= test1$u, 
-                                       Vhat = test1$v, 
-                                       example = example, 
-                                       name_method="SSVD-method-init-norm", 
-                                       overlapping_amount=overlapping_amount,
-                                       lambdax= NA,
-                                       lambday = NA, 
-                                       thres = THRES,
-                                       it=it,
-                                       normalize_diagonal=normalize_diagonal,
-                                       criterion=criterion,
-                                       r_pca = r_pca, nnz=nnz,
-                                       signal_strength=signal_strength)
-              if (length(results)==0){
-                results=temp
-              }else{
-                results <- rbind(results, temp )
-                
-              }
-            }, error = function(e) {
-              # Print the error message
-              cat("Error occurred in method sparse SSVD (method init-norm) ", ":", conditionMessage(e), "\n")
-              # Skip to the next iteration
-            })
+      
           
             result <- tryCatch({
               normalize=FALSE

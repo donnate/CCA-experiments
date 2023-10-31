@@ -142,18 +142,38 @@ soft.thresh.scaler <-
   }
 
 my.ssvd <-
-  function (x, Sigma_u, Sigma_v,
+  function (x, Sigma_u, Sigma_v, x_full = NULL,
             method = c("theory", "method"), alpha.method = 0.05,
             alpha.theory = 1.5, huber.beta = 0.95, sigma = NA, r = 1,
             gamma.u = sqrt(2), gamma.v = sqrt(2), dothres = "hard", tol = 1e-08,
-            n.iter = 100, n.boot = 100, non.orth = FALSE, reps = 1, init_norm = FALSE)
+            n.iter = 100, n.boot = 100, non.orth = FALSE, reps = 1, 
+            init_norm = FALSE, init_type = "row_selection")
     # the main function
     # init_norm: whether to normalize the initial estimator.
   {
-    ans.initial <- ssvd.initial(atanh(x), Sigma_u = Sigma_u, Sigma_v = Sigma_v, 
-                                method = method, alpha.method = alpha.method,
-                                alpha.theory = alpha.theory, huber.beta = huber.beta,
-                                sigma = sigma, r = r, init_norm = init_norm)
+    if (init_type == "row_selection"){
+      ans.initial <- ssvd.initial(x, Sigma_u = Sigma_u, Sigma_v = Sigma_v, 
+                                  method = method, alpha.method = alpha.method,
+                                  alpha.theory = alpha.theory, huber.beta = huber.beta,
+                                  sigma = sigma, r = r, init_norm = init_norm,
+                                  init_type = "row_selection")
+    }else{
+      if(is.null(x_full)){
+        ans.initial <- ssvd.initial(x, Sigma_u = Sigma_u, Sigma_v = Sigma_v, 
+                                    method = method, alpha.method = alpha.method,
+                                    alpha.theory = alpha.theory, huber.beta = huber.beta,
+                                    sigma = sigma, r = r, init_norm = init_norm,
+                                    init_type = "full")
+      }else{
+        ans.initial <- ssvd.initial(x_full, Sigma_u = Sigma_u, Sigma_v = Sigma_v, 
+                                    method = method, alpha.method = alpha.method,
+                                    alpha.theory = alpha.theory, huber.beta = huber.beta,
+                                    sigma = sigma, r = r, init_norm = init_norm,
+                                    init_type = "full")
+      }
+
+    }
+
     my.ssvd.iter.thresh(x, Sigma_u, Sigma_v,
                         method = method, u.old = ans.initial$u,
                        v.old = ans.initial$v, gamma.u = gamma.u, gamma.v = gamma.v,
@@ -164,9 +184,10 @@ my.ssvd <-
   }
 
 ssvd.initial <-
-  function (x, Sigma_u = NA, Sigma_v = NA,
+  function (x, Sigma_u = NA, Sigma_v = NA, x_full = NULL,
             method = c("theory", "method"), alpha.method = 0.05,
-            alpha.theory = 1.5, huber.beta = 0.95, sigma = NA, r = 1, init_norm = FALSE)
+            alpha.theory = 1.5, huber.beta = 0.95, sigma = NA, r = 1, 
+            init_norm = FALSE, init_type = "row_selection")
     # implement SSVD initial selection in both the methodology and theoretical paper
     # to use theoretical one, set method to "theory", and set alpha.theory
     # to use methodology, set method to the "method", and set alpha.method, huber.beta
@@ -193,11 +214,24 @@ ssvd.initial <-
     # row and column selection
     rownorm2 <- apply(x.huber, 1, sum)
     colnorm2 <- apply(x.huber, 2, sum)
-    I.row <- get.subset(rownorm2, method = method, alpha.method = alpha.method,
-                        alpha.theory = alpha.theory, sigma = sigma.hat, df = pv)
-    print(I.row)
-    I.col <- get.subset(colnorm2, method = method, alpha.method = alpha.method,
-                        alpha.theory = alpha.theory, sigma = sigma.hat, df = pu)
+    if (init_type == "row_selection"){
+      I.row <- get.subset(rownorm2, method = method, alpha.method = alpha.method,
+                          alpha.theory = alpha.theory, sigma = sigma.hat, df = pv)
+      print(I.row)
+      I.col <- get.subset(colnorm2, method = method, alpha.method = alpha.method,
+                          alpha.theory = alpha.theory, sigma = sigma.hat, df = pu)
+    }else{
+      if (is.null(x_full)){
+        pu <- nrow(Sigma_u)
+        pv <- ncol(Sigma_v)
+        rownorm2 <- apply(x.huber, 1, sum)[1:pu]
+        colnorm2 <- apply(x.huber, 2, sum)[(pu+1):(pu + pv)]
+      }
+      I.row <- (order(rownorm2, decreasing = TRUE))[1:min(0.15 * n, pu)]
+      I.col <- (order(colnorm2, decreasing = TRUE))[1:min(0.15 * n, pv)]
+
+    }
+
     # sanitary
     if (length(I.row) < r) {
       warning("SSVD.initial: Number of selected rows less than rank!")
@@ -210,15 +244,15 @@ ssvd.initial <-
                                                             10, pv)]
     }
     # CCA on selected submatrix
-    Sigma_u_inv = pinv(Sigma_u[I.row, I.row])
-    Sigma_v_inv = pinv(Sigma_v[I.col, I.col])
+    Sigma_u_inv = sqrtm(Sigma_u[I.row, I.row])$Binv
+    Sigma_v_inv = sqrtm(Sigma_v[I.col, I.col])$Binv
     x.sub.svd <- svd(Sigma_u_inv %*% x[I.row, I.col, drop = FALSE] %*% Sigma_v_inv, 
                      nu = r, nv = r)
     # expanding
     u.hat <- matrix(0, pu, r)
     v.hat <- matrix(0, pv, r)
-    u.hat[I.row, ] <- x.sub.svd$u
-    v.hat[I.col, ] <- x.sub.svd$v
+    u.hat[I.row, ] <- Sigma_u_inv %*% x.sub.svd$u
+    v.hat[I.col, ] <- Sigma_v_inv %*% x.sub.svd$v
     d.hat <- x.sub.svd$d[1:r]
     
     if(init_norm){
@@ -347,36 +381,36 @@ my.ssvd.iter.thresh <-
         # QR decomposition
         #u.cur <- qr.Q(qr(u.cur))
         #selected_col = which(apply(u.cur^2, 2, sum) >0)
-        # norm_u = t(u.cur) %*% Sigma_u %*% u.cur
-        # #index_zero = which(diag(norm_u) < 1e-8)
-        # index_non_zero = which(diag(norm_u) > 1e-6)
+        norm_u = t(u.cur) %*% Sigma_u %*% u.cur
+        #index_zero = which(diag(norm_u) < 1e-8)
+        index_non_zero = which(diag(norm_u) > 1e-6)
         # #print(index_zero)
         # #for (ind in index_zero){
         # #  norm_u[ind, ind] = 1
         # #}
-        # #u.cur[index_non_zero, ] <- solve(Sigma_u[index_non_zero, index_non_zero]) %*% u.cur #%*% (sqrtm(norm_u)$Binv)
-        # u.cur[index_non_zero, ] <- solve(Sigma_u[index_non_zero, index_non_zero]) %*% u.cur[index_non_zero, ]
-        # norm_u = t(u.cur[index_non_zero, ]) %*% Sigma_u[index_non_zero, index_non_zero] %*% u.cur[index_non_zero, ]
-        # u.cur[index_non_zero, ] <- u.cur[index_non_zero, ] %*% sqrtm(norm_u)$Binv
-        # u.cur[-index_non_zero, ] <- 0
+        #u.cur[index_non_zero, ] <- solve(Sigma_u[index_non_zero, index_non_zero]) %*% u.cur #%*% (sqrtm(norm_u)$Binv)
+        u.cur[index_non_zero, ] <- solve(Sigma_u[index_non_zero, index_non_zero]) %*% u.cur[index_non_zero, ]
+        norm_u = t(u.cur[index_non_zero, ]) %*% Sigma_u[index_non_zero, index_non_zero] %*% u.cur[index_non_zero, ]
+        u.cur[index_non_zero, ] <- u.cur[index_non_zero, ] %*% sqrtm(norm_u)$Binv
+        u.cur[-index_non_zero, ] <- 0
         # #norm_u <- apply(u.cur, 2, norm)
         # #inv_norm <- sapply(norm_u, function(x){ ifelse(x > 1e-6, 1/x, 1)})
         # #u.cur <- u.cur %*% diag(inv_norm)
         # print("check norm")
         # print(t(u.cur) %*% Sigma_u %*% u.cur)
-        norm_u <- apply(u.cur, 2, norm)
-        inv_norm <- sapply(norm_u, function(x){ ifelse(x > 1e-4, 1/x, 1)})
-        u.cur <- u.cur %*% diag(inv_norm)
+        #norm_u <- apply(u.cur, 2, norm)
+        #inv_norm <- sapply(norm_u, function(x){ ifelse(x > 1e-4, 1/x, 1)})
+        #u.cur <- u.cur %*% diag(inv_norm)
         # QR decomposition
         #u.cur <- qr.Q(qr(u.cur))
         #selected_col = which(apply(u.cur^2, 2, sum) >0)
-        norm_u = t(u.cur) %*% Sigma_u %*% u.cur
-        index_zero = which(diag(norm_u) < 1e-8)
-        print(index_zero)
-        for (ind in index_zero){
-          norm_u[ind, ind] = 1
-        }
-        u.cur <- u.cur %*% (sqrtm(norm_u)$Binv)
+        #norm_u = t(u.cur) %*% Sigma_u %*% u.cur
+        #index_zero = which(diag(norm_u) < 1e-8)
+        #print(index_zero)
+        #for (ind in index_zero){
+        #  norm_u[ind, ind] = 1
+        #}
+        #u.cur <- u.cur %*% (sqrtm(norm_u)$Binv)
         #dist.u <- subsp.dist.orth(u.cur, u.old)
         dist.u <- subsp.dist.orth(u.cur, u.old)
         #print(c("Dim u", dim(u.cur)))
@@ -409,29 +443,29 @@ my.ssvd.iter.thresh <-
         break
       }
       else {
-        # norm_v = t(v.cur) %*% Sigma_v %*% v.cur
+        norm_v = t(v.cur) %*% Sigma_v %*% v.cur
         # #index_zero = which(diag(norm_u) < 1e-8)
-        # index_non_zero = which(diag(norm_v) > 1e-6)
+        index_non_zero = which(diag(norm_v) > 1e-6)
         # #v.cur[index_non_zero, ] <- solve(Sigma_v[index_non_zero, index_non_zero]) %*% v.cur #%*% (sqrtm(norm_u)$Binv)
-        # v.cur[index_non_zero, ] <- solve(Sigma_v[index_non_zero, index_non_zero]) %*% v.cur[index_non_zero, ]
-        # norm_v = t(v.cur[index_non_zero, ]) %*% Sigma_v[index_non_zero, index_non_zero] %*% v.cur[index_non_zero, ]
-        # v.cur[index_non_zero, ] <- v.cur[index_non_zero, ] %*% sqrtm(norm_v)$Binv
-        # v.cur[-index_non_zero, ] <- 0
+        v.cur[index_non_zero, ] <- solve(Sigma_v[index_non_zero, index_non_zero]) %*% v.cur[index_non_zero, ]
+        norm_v = t(v.cur[index_non_zero, ]) %*% Sigma_v[index_non_zero, index_non_zero] %*% v.cur[index_non_zero, ]
+        v.cur[index_non_zero, ] <- v.cur[index_non_zero, ] %*% sqrtm(norm_v)$Binv
+        v.cur[-index_non_zero, ] <- 0
         # print(v.cur)
         #inv_norm <- sapply(norm_v, function(x){ ifelse(x > 1e-6, 1/x, 1)})
         #v.cur <- v.cur %*% diag(inv_norm)
-        norm_v <- apply(v.cur, 2, norm)
-        inv_norm <- sapply(norm_v, function(x){ ifelse(x > 1e-4, 1/x, 1)})
-        v.cur <- v.cur %*% diag(inv_norm)
+        #norm_v <- apply(v.cur, 2, norm)
+        #inv_norm <- sapply(norm_v, function(x){ ifelse(x > 1e-4, 1/x, 1)})
+        #v.cur <- v.cur %*% diag(inv_norm)
         # QR decomposition
         #v.cur <- qr.Q(qr(v.cur))
         ### check if some rows are 0
-        norm_v = t(v.cur) %*% Sigma_v %*% v.cur
-        index_zero = which(diag(norm_v) < 1e-8)
-        for (ind in index_zero){
-          norm_v[ind, ind] = 1
-        }
-        v.cur <- v.cur %*% (sqrtm(norm_v)$Binv)
+        #norm_v = t(v.cur) %*% Sigma_v %*% v.cur
+        #index_zero = which(diag(norm_v) < 1e-8)
+        #for (ind in index_zero){
+        #  norm_v[ind, ind] = 1
+        #}
+        #v.cur <- v.cur %*% (sqrtm(norm_v)$Binv)
         print("check norm v")
         print(t(v.cur) %*% Sigma_v %*% v.cur)
         
